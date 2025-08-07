@@ -19,9 +19,7 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute",
-          },
+          ios: { position: "absolute" },
           default: {},
         }),
       }}
@@ -35,6 +33,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="AdicionarPulseiraScreen"
         options={{
@@ -43,6 +42,7 @@ export default function TabLayout() {
             <Image
               source={require("@/assets/images/image.png")}
               style={{ width: size, height: size, tintColor: color }}
+              resizeMode="contain"
             />
           ),
         }}
@@ -56,10 +56,12 @@ export default function TabLayout() {
             <Image
               source={require("@/assets/images/TablerFenceFilled.png")}
               style={{ width: size, height: size, tintColor: color }}
+              resizeMode="contain"
             />
           ),
         }}
       />
+
       <Tabs.Screen
         name="Alarme"
         options={{
@@ -68,6 +70,7 @@ export default function TabLayout() {
             <Image
               source={require("@/assets/images/MaterialSymbolsEyeTrackingOutline.png")}
               style={{ width: size, height: size, tintColor: color }}
+              resizeMode="contain"
             />
           ),
         }}
