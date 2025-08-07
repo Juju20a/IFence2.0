@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Switch,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { useDaltonicColors } from "../hooks/useDaltonicColors";
@@ -8,6 +17,8 @@ import Toast from "react-native-toast-message";
 import { Picker } from "@react-native-picker/picker";
 import { useCercas } from "../../components/Cercas/hooks/useCercas";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const { width } = Dimensions.get("window");
 
 type Pulseira = {
   id: string;
@@ -22,14 +33,12 @@ const AdicionarPulseiraScreen: React.FC = () => {
   const [nomePulseira, setNomePulseira] = useState("");
   const [pulseiras, setPulseiras] = useState<Pulseira[]>([]);
   const [cercaSelecionada, setCercaSelecionada] = useState<string>("");
-  // Buscar cercas reais do sistema
   const { cercas } = useCercas();
   const [editandoIndex, setEditandoIndex] = useState<number | null>(null);
   const [novoNomePulseira, setNovoNomePulseira] = useState("");
 
   const PULSEIRAS_STORAGE = "@pulseiras";
 
-  // Funções de manipulação
   const adicionarPulseira = () => {
     if (!nomePulseira || !cercaSelecionada) {
       Toast.show({ type: "error", text1: "Preencha todos os campos!" });
@@ -52,20 +61,20 @@ const AdicionarPulseiraScreen: React.FC = () => {
   const iniciarEdicao = (index: number) => {
     setEditandoIndex(index);
     setNovoNomePulseira(pulseiras[index].nome);
-    setCercaSelecionada(pulseiras[index].cercaId); // Setar cerca atual para edição
+    setCercaSelecionada(pulseiras[index].cercaId);
   };
 
   const cancelarEdicao = () => {
     setEditandoIndex(null);
     setNovoNomePulseira("");
-    setCercaSelecionada(""); // Limpar seleção de cerca ao cancelar edição
+    setCercaSelecionada("");
   };
 
   const salvarEdicao = () => {
     if (editandoIndex === null) return;
     const novasPulseiras = [...pulseiras];
     novasPulseiras[editandoIndex].nome = novoNomePulseira;
-    novasPulseiras[editandoIndex].cercaId = cercaSelecionada; // Atualizar cerca
+    novasPulseiras[editandoIndex].cercaId = cercaSelecionada;
     setPulseiras(novasPulseiras);
     salvarPulseiras(novasPulseiras);
     cancelarEdicao();
@@ -111,35 +120,39 @@ const AdicionarPulseiraScreen: React.FC = () => {
     inicializarPulseiras();
   }, []);
 
-  // Removido mock de cercas, agora usa cercas reais do sistema
-
   return (
     <View style={{ flex: 1 }}>
       <Header />
-      <View style={[styles.container, { backgroundColor: colors.background }] }>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Text style={[styles.titulo, { color: colors.title }]}>Adicionar pulseira</Text>
-          <View style={[styles.card, { backgroundColor: colors.infoBox, borderColor: colors.border }] }>
+
+          <View style={[styles.card, { backgroundColor: colors.infoBox, borderColor: colors.border }]}>
             <Text style={[styles.label, { color: colors.title }]}>Nome da pulseira:</Text>
             <TextInput
-              style={[styles.input, { color: colors.title, borderColor: colors.border, backgroundColor: colors.background }]}
+              style={[
+                styles.input,
+                {
+                  color: colors.title,
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                },
+              ]}
               value={nomePulseira}
               onChangeText={setNomePulseira}
             />
+
             <Text style={[styles.label, { color: colors.title }]}>Selecione uma cerca:</Text>
             <Picker
               selectedValue={cercaSelecionada}
               onValueChange={(itemValue) => setCercaSelecionada(itemValue)}
             >
               <Picker.Item label="Selecione uma cerca" value="" />
-              {cercas.map((cerca, idx) => (
-                <Picker.Item
-                  key={String(cerca.id)}
-                  label={cerca.nome}
-                  value={String(cerca.id)}
-                />
+              {cercas.map((cerca) => (
+                <Picker.Item key={String(cerca.id)} label={cerca.nome} value={String(cerca.id)} />
               ))}
             </Picker>
+
             <View style={styles.botoes}>
               <TouchableOpacity
                 style={[styles.botaoAdicionar, { backgroundColor: colors.button }]}
@@ -155,15 +168,30 @@ const AdicionarPulseiraScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </View>
+
           <Text style={[styles.titulo, { color: colors.title }]}>Pulseiras Cadastradas:</Text>
+
           {pulseiras.map((item, index) => {
-            const cercaAtribuida = cercas.find((cerca) => cerca.id === item.cercaId);
+            const cercaAtribuida = cercas.find((c) => c.id === item.cercaId);
             return (
-              <View key={item.id || index} style={[styles.card, { backgroundColor: colors.infoBox, borderColor: colors.border }] }>
+              <View
+                key={item.id || index}
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.infoBox, borderColor: colors.border },
+                ]}
+              >
                 {editandoIndex === index ? (
-                  <View style={[styles.cardEdicao, { backgroundColor: colors.infoBox, borderColor: colors.border }] }>
+                  <View style={[styles.cardEdicao, { backgroundColor: colors.infoBox, borderColor: colors.border }]}>
                     <TextInput
-                      style={[styles.input, { color: colors.title, borderColor: colors.border, backgroundColor: colors.background }]}
+                      style={[
+                        styles.input,
+                        {
+                          color: colors.title,
+                          borderColor: colors.border,
+                          backgroundColor: colors.background,
+                        },
+                      ]}
                       value={novoNomePulseira}
                       onChangeText={setNovoNomePulseira}
                     />
@@ -172,8 +200,8 @@ const AdicionarPulseiraScreen: React.FC = () => {
                       onValueChange={(itemValue) => setCercaSelecionada(itemValue)}
                     >
                       <Picker.Item label="Selecione uma cerca" value="" />
-                      {cercas.map((cerca) => (
-                        <Picker.Item key={cerca.id} label={cerca.nome} value={cerca.id} />
+                      {cercas.map((c) => (
+                        <Picker.Item key={c.id} label={c.nome} value={c.id} />
                       ))}
                     </Picker>
                     <View style={styles.botoes}>
@@ -190,7 +218,7 @@ const AdicionarPulseiraScreen: React.FC = () => {
                         <Text style={[styles.textoBotaoedit, { color: colors.buttonText }]}>Cancelar</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={[styles.botaoExcluir, { backgroundColor: colors.button }]} 
+                        style={[styles.botaoExcluir, { backgroundColor: colors.button }]}
                         onPress={() => deletarPulseira(index)}
                       >
                         <Text style={[styles.textoBotaoedit, { color: colors.buttonText }]}>Excluir</Text>
@@ -219,7 +247,7 @@ const AdicionarPulseiraScreen: React.FC = () => {
                     });
                   }}
                 >
-                  <Text style={[styles.textoBotaoVerLocalizacoes, { color: colors.title }] }>
+                  <Text style={[styles.textoBotaoVerLocalizacoes, { color: colors.title }]}>
                     Ver Localizações
                   </Text>
                 </TouchableOpacity>
@@ -234,12 +262,6 @@ const AdicionarPulseiraScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  cardEdicao: {
-    padding: 15,
-    margin: 10,
-    borderWidth: 2,
-    borderRadius: 8,
-  },
   container: {
     flex: 1,
     padding: 20,
@@ -247,8 +269,10 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
   },
-  backButton: {
-    padding: 10,
+  titulo: {
+    fontSize: 27,
+    fontWeight: "600",
+    marginVertical: 10,
   },
   label: {
     fontSize: 20,
@@ -263,9 +287,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   botoes: {
-    flexDirection: "row",
+    flexDirection: width < 400 ? "column" : "row",
     justifyContent: "center",
+    alignItems: "center",
     gap: 15,
+    flexWrap: "wrap",
   },
   botaoAdicionar: {
     paddingVertical: 10,
@@ -277,15 +303,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 4,
   },
+  card: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 20,
+    width: "100%",
+    maxWidth: 600,
+    alignSelf: "center",
+  },
+  cardEdicao: {
+    padding: 15,
+    margin: 10,
+    borderWidth: 2,
+    borderRadius: 8,
+    width: "100%",
+    maxWidth: 600,
+    alignSelf: "center",
+  },
   botaoadd: {
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 6,
     flex: 1,
-    maxWidth: 120,
     alignItems: "center",
     marginHorizontal: 5,
     marginBottom: 10,
+    minWidth: width * 0.28,
+  },
+  botaoCancell: {
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    borderRadius: 6,
+    flex: 1,
+    marginBottom: 10,
+    alignItems: "center",
+    minWidth: width * 0.28,
   },
   botaoExcluir: {
     paddingVertical: 10,
@@ -295,14 +348,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 5,
     marginBottom: 10,
-  },
-  botaoCancell: {
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    borderRadius: 6,
-    flex: 1,
-    maxWidth: 120,
-    marginBottom: 10,
+    minWidth: width * 0.28,
   },
   textoBotao: {
     fontSize: 18,
@@ -311,26 +357,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 11,
   },
-  titulo: {
-    fontSize: 27,
-    fontWeight: "600",
-    marginVertical: 10,
-  },
-  card: {
-    padding: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 20,
-  },
   item: {
     fontSize: 18,
   },
   textoBotaoVerLocalizacoes: {
-    fontSize: 17
+    fontSize: 17,
+    marginTop: 5,
   },
   cercaInfo: {
     fontSize: 14,
     color: "#555",
+    marginVertical: 5,
   },
 });
 
